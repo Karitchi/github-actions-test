@@ -1,0 +1,44 @@
+name: Lint Python Code
+
+# Run the workflow whenever there is a push or pull request to the repository
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint Code with Flake8
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11.2" # Specify the Python version you want to use
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8  # Install flake8 for linting
+
+      - name: Run Flake8 Linter
+        run: |
+          flake8 .  # Run flake8 on the entire repository
+
+      - name: Upload Flake8 Report (if desired)
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: flake8-report
+          path: flake8-report.txt
+
+      - name: Fail the job if lint errors are found
+        if: failure()
+        run: exit 1
